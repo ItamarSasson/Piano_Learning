@@ -96,7 +96,7 @@
       transform: scale(1.005);
     }
     li.exercise.active {
-      background: #ffeb3b; /* תרגיל נוכחי */
+      background: #ffeb3b;
       border: 1px solid #fbc02d;
       font-weight: bold;
     }
@@ -179,6 +179,26 @@
       50% { transform: scale(1.05); }
       100% { transform: scale(1); }
     }
+    /* סטייל ל-pop-up */
+    #popup {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0,0,0,0.5);
+      z-index: 1000;
+      align-items: center;
+      justify-content: center;
+    }
+    #popupContent {
+      background: #fff;
+      padding: 20px;
+      border-radius: 8px;
+      text-align: center;
+      max-width: 90%;
+    }
     /* Media Query למכשירים עם גובה נמוך */
     @media screen and (max-height: 800px) {
       .container {
@@ -244,6 +264,11 @@
     </div>
   </div>
 
+  <!-- אלמנט pop-up -->
+  <div id="popup">
+    <div id="popupContent"></div>
+  </div>
+
   <script>
     // משתנים גלובליים לניהול תרגילים וטיימר
     let exercises = [];
@@ -306,6 +331,36 @@
     const currentTimeDiv = document.getElementById("currentTime");
     const totalTimerDisplay = document.getElementById("totalTimerDisplay");
 
+    // פונקציות pop-up
+    function showPopup(message, buttonText, callback) {
+      const popup = document.getElementById("popup");
+      const popupContent = document.getElementById("popupContent");
+      popupContent.innerHTML = "";
+      const messageDiv = document.createElement("div");
+      messageDiv.style.marginBottom = "20px";
+      messageDiv.style.fontSize = "18px";
+      messageDiv.textContent = message;
+      popupContent.appendChild(messageDiv);
+      const button = document.createElement("button");
+      button.style.background = "#4CAF50";
+      button.style.color = "#fff";
+      button.style.padding = "10px 20px";
+      button.style.border = "none";
+      button.style.borderRadius = "4px";
+      button.style.cursor = "pointer";
+      button.textContent = buttonText;
+      button.onclick = function() {
+        callback();
+        hidePopup();
+      };
+      popupContent.appendChild(button);
+      popup.style.display = "flex";
+    }
+    function hidePopup() {
+      const popup = document.getElementById("popup");
+      popup.style.display = "none";
+    }
+
     // רינדור רשימת התרגילים (ללא אפשרות עריכה ומספור)
     function renderExercises() {
       exercisesUl.innerHTML = "";
@@ -338,7 +393,7 @@
         }
         li.appendChild(moveContainer);
 
-        // לחיצה על פריט התרגיל מעדכנת את התרגיל הנוכחי
+        // לחיצה על התרגיל מעדכנת את התרגיל הנוכחי
         li.addEventListener("click", function(e) {
           if (
             e.target.tagName.toLowerCase() !== "button" &&
@@ -391,7 +446,7 @@
       });
     }
 
-    // הפונקציות להזזת תרגיל למעלה/למטה
+    // פונקציות להזזת תרגיל למעלה/למטה
     function moveTaskUp(index) {
       if (index <= 0) return;
       [exercises[index-1], exercises[index]] = [exercises[index], exercises[index-1]];
@@ -473,7 +528,7 @@
       updateTotalTimerDisplay();
     });
 
-    // עדכון תצוגת התרגיל הנוכחי והשעון המקומי
+    // עדכון תצוגת התרגיל הנוכחי והשעון
     function updateDisplay() {
       if (currentIndex < exercises.length) {
         const currentExercise = exercises[currentIndex];
@@ -490,7 +545,62 @@
       renderExercises();
     }
 
-    // הפעלת הטיימר – מעדכן את remainingSeconds ואת totalTimeRemaining כל שנייה
+    // פונקציה לטיפול בהפסקת תרגיל – מציגה pop-up וממשיכה רק אחרי לחיצה
+    function handleExerciseCompletion() {
+      stopTimer();
+      if (currentIndex < exercises.length - 1) {
+        // לאחר סיום תרגיל, סמן את התרגיל הנוכחי כהושלם ושמור
+        exercises[currentIndex].completed = true;
+        saveExercises();
+        // הצגת הודעה עם לחצן "Continue"
+        showPopup("המשיכו לתרגיל הבא", "Continue", function() {
+          currentIndex++;
+          remainingSeconds = exercises[currentIndex].duration * 60;
+          totalTimeRemaining = getRemainingTotalTime();
+          updateDisplay();
+          updateTotalTimerDisplay();
+          startTimer();
+        });
+      } else {
+        // אם זהו התרגיל האחרון – סיום התרגול
+        exercises[currentIndex].completed = true;
+        saveExercises();
+        let quotes = [
+          'Claude Debussy: "Works of art make rules; rules do not make works of art."',
+          'Leonard Bernstein: "To achieve great things, two things are needed; a plan, and not quite enough time."',
+          'Bela Bartok: "Competitions are for horses, not artists."',
+          'Franz Liszt: "Mournful and yet grand is the destiny of the artist."',
+          'Gustav Mahler: "I am hitting my head against the walls, but the walls are giving way."',
+          'Igor Stravinsky: "Lesser artists borrow, great artists steal."',
+          'Edward Elgar: "I always said God was against art and I still believe it."',
+          'Johannes Brahms: "Without craftsmanship, inspiration is a mere reed shaken in the wind."',
+          'Joseph Haydn: "There was no one near to confuse me, so I was forced to become original."',
+          'George Bizet: "As a musician I tell you that if you were to suppress adultery, fanaticism, crime, evil, the supernatural, there would no longer be the means for writing one note."',
+          'J.S. Bach: "I was obliged to be industrious. Whoever is equally industrious will succeed equally well."',
+          'Erik Satie: "The musician is perhaps the most modest of animals, but he is also the proudest."',
+          'Robert Schumann: "To send light into the darkness of men\'s hearts - such is the duty of the artist."',
+          'Dmitri Shostakovich: "A creative artist works on his next composition because he was not satisfied with his previous one."',
+          'Richard Strauss: "I may not be a first-rate composer, but I am a first-class second-rate composer."',
+          'John Cage: "I can\'t understand why people are frightened of new ideas. I\'m frightened of the old ones."',
+          'Karlheinz Stockhausen: "I\'m an adventurer. I like invention, I like discovery."',
+          'Benjamin Britten: "The old idea of a composer suddenly having a terrific idea and sitting up all night to write it is nonsense. Nighttime is for sleeping."',
+          'Giacomo Puccini: "Inspiration is an awakening, a quickening of all man\'s faculties, and it is manifested in all high artistic achievements."',
+          'Malcolm Arnold: "Music is the social act of communication among people, a gesture of friendship, the strongest there is."',
+          'Maurice Ravel: "The only love affair I have ever had was with music."',
+          'Richard Wagner: "Imagination creates reality."',
+          'Ludwig van Beethoven: "Music is a higher revelation than all wisdom and philosophy."',
+          'Robert Schumann: "To send light into the darkness of men\'s hearts - such is the duty of the artist."',
+          'Nina Simone: "Jazz is a white term to define black people. My music is black classical music."',
+          'Author Victor Hugo: "Music expresses that which cannot be said and on which it is impossible to be silent."'
+        ];
+        let randomQuote = quotes[Math.floor(Math.random() * quotes.length)];
+        showPopup("כל הכבוד, סיימתם את התרגול", randomQuote, function() {
+          // בסיום אין פעולה נוספת – פשוט הסתר את ה-popup
+        });
+      }
+    }
+
+    // הפעלת הטיימר – מעדכן את remainingSeconds ו־totalTimeRemaining כל שנייה
     function startTimer() {
       if (currentIndex >= exercises.length) return;
       if (timerInterval) clearInterval(timerInterval);
@@ -505,7 +615,7 @@
         if (remainingSeconds > 0) {
           remainingSeconds--;
         } else {
-          nextExercise();
+          handleExerciseCompletion();
           return;
         }
         totalTimeRemaining = getRemainingTotalTime();
@@ -549,25 +659,6 @@
       totalTimeRemaining = getRemainingTotalTime();
       updateDisplay();
       updateTotalTimerDisplay();
-    }
-    // מעבר לתרגיל הבא
-    function nextExercise() {
-      stopTimer();
-      if (currentIndex < exercises.length) {
-        exercises[currentIndex].completed = true;
-        saveExercises();
-      }
-      if (currentIndex < exercises.length - 1) {
-        currentIndex++;
-        remainingSeconds = exercises[currentIndex].duration * 60;
-        totalTimeRemaining = getRemainingTotalTime();
-        updateDisplay();
-        startTimer();
-      } else {
-        currentIndex++;
-        updateDisplay();
-        stopTimer();
-      }
     }
 
     // לחצן "מחק הכל" – מוחק את כל התרגילים
