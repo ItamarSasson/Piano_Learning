@@ -1,0 +1,610 @@
+<!DOCTYPE html>
+<html lang="he">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ניהול זמן תרגול פסנתר</title>
+  <!-- Font Awesome (לצורך אייקונים במידה ויש צורך בעתיד) -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" 
+        integrity="sha512-Fo3rlrZj/k7ujTTXRM4X+7Uv1D5Qd4w/fim3IRXJkD0uM9hi0/gapKTxjjigMokp3xS1p4X3aM2rM1F1q4wWg==" 
+        crossorigin="anonymous" referrerpolicy="no-referrer" />
+  <style>
+    /* עיצוב קומפקטי ונקי */
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: Arial, sans-serif;
+      background: #f5f5f5;
+      direction: rtl;
+      font-size: 14px;
+    }
+    .container {
+      max-width: 700px;
+      margin: 10px auto;
+      background: #fff;
+      padding: 10px;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+    }
+    h1, h2 {
+      text-align: center;
+      color: #333;
+      margin: 6px 0;
+    }
+    /* תיבות תוכן */
+    .box {
+      background: #fff;
+      padding: 10px;
+      margin: 10px 0;
+      border-radius: 6px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+    }
+    /* שדות קלט ולחצנים קומפקטיים */
+    input, textarea {
+      width: 100%;
+      padding: 6px;
+      margin: 6px 0;
+      font-size: 13px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      box-sizing: border-box;
+    }
+    button {
+      padding: 6px 10px;
+      margin: 3px;
+      font-size: 13px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: background 0.3s;
+    }
+    button:hover {
+      opacity: 0.9;
+    }
+    /* לחצנים עיקריים */
+    #addExercise, #startSession {
+      background: #4CAF50;
+      color: #fff;
+    }
+    #stopTimer {
+      background: #f44336;
+      color: #fff;
+    }
+    #resetExercise, #resetSession, #deleteAll {
+      background: #2196F3;
+      color: #fff;
+    }
+    /* רשימת תרגילים */
+    ul {
+      list-style: none;
+      padding: 0;
+    }
+    li.exercise {
+      padding: 8px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      background: #fdfdfd;
+      margin-bottom: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      transition: background 0.3s, transform 0.3s;
+      cursor: pointer;
+    }
+    li.exercise:hover {
+      background: #f7f7f7;
+      transform: scale(1.005);
+    }
+    li.exercise.active {
+      background: #ffeb3b; /* תרגיל נוכחי */
+      border: 1px solid #fbc02d;
+      font-weight: bold;
+    }
+    .exercise-info {
+      flex-grow: 1;
+      margin-right: 4px;
+    }
+    .exercise-info div {
+      line-height: 1.2;
+    }
+    .exercise-note {
+      font-size: 11px;
+      color: #666;
+      margin-top: 2px;
+    }
+    /* לחצני תזוזה – קטנים מאוד */
+    .moveContainer {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      margin-left: 4px;
+    }
+    .upBtn, .downBtn {
+      padding: 1px 2px;
+      font-size: 10px;
+      border: 1px solid #000;
+      border-radius: 2px;
+      background: #eee;
+      cursor: pointer;
+      color: #000;
+      margin: 1px 0;
+    }
+    .upBtn:hover, .downBtn:hover {
+      background: #ddd;
+    }
+    /* כפתור סימון ביצוע – ריבוע קטן עם V במרכז */
+    .completeBtn {
+      width: 20px;
+      height: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+      border: 1px solid #000;
+      background: #fff;
+      cursor: pointer;
+      margin-left: 4px;
+    }
+    .completeBtn.completed {
+      background: #4CAF50;
+      color: #fff;
+    }
+    /* לחצן מחיקה */
+    .deleteBtn {
+      flex-shrink: 0;
+      margin-left: 4px;
+      padding: 4px 8px;
+      font-size: 12px;
+      border-radius: 4px;
+      cursor: pointer;
+      border: 1px solid;
+      background: transparent;
+      color: #f44336;
+      border-color: #f44336;
+    }
+    .deleteBtn:hover {
+      background: #f44336;
+      color: #fff;
+    }
+    /* שעונים */
+    .timer {
+      text-align: center;
+      font-size: 36px;
+      margin-top: 10px;
+      color: #333;
+      animation: pulse 1s infinite;
+    }
+    @keyframes pulse {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.05); }
+      100% { transform: scale(1); }
+    }
+    /* Media Query למכשירים עם גובה נמוך */
+    @media screen and (max-height: 800px) {
+      .container {
+        margin: 5px;
+        padding: 5px;
+      }
+      h1, h2 {
+        font-size: 18px;
+      }
+      .timer {
+        font-size: 28px;
+      }
+      button, input, textarea {
+        font-size: 11px;
+        padding: 4px 6px;
+      }
+      li.exercise {
+        padding: 6px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>ניהול זמן תרגול פסנתר</h1>
+
+    <!-- תצוגת שעון כולל -->
+    <div class="box" id="totalTimerBox">
+      <h2>זמן כולל</h2>
+      <div class="timer" id="totalTimerDisplay">00:00:00</div>
+    </div>
+
+    <!-- הוספת תרגיל -->
+    <div class="box" id="exerciseSetup">
+      <h2>הוסף תרגיל</h2>
+      <input type="text" id="exerciseName" placeholder="שם התרגיל">
+      <input type="number" id="exerciseDuration" placeholder="משך (בדקות)" min="1">
+      <textarea id="exerciseNote" placeholder="הערה (אופציונלי)" rows="2"></textarea>
+      <button id="addExercise"><i class="fas fa-plus"></i> הוסף תרגיל</button>
+    </div>
+
+    <!-- רשימת תרגילים -->
+    <div class="box" id="exerciseListBox">
+      <h2>רשימת תרגילים</h2>
+      <ul id="exercises"></ul>
+    </div>
+
+    <!-- כפתורי ניהול תרגול -->
+    <div class="box" id="controls">
+      <button id="startSession"><i class="fas fa-play"></i> התחל תרגול</button>
+      <button id="stopTimer"><i class="fas fa-pause"></i> עצור</button>
+      <button id="resetExercise"><i class="fas fa-undo"></i> איפוס תרגיל</button>
+      <button id="resetSession"><i class="fas fa-redo"></i> איפוס כולל</button>
+      <button id="deleteAll"><i class="fas fa-trash"></i> מחק הכל</button>
+    </div>
+
+    <!-- תצוגת תרגיל נוכחי -->
+    <div class="box" id="currentExerciseBox">
+      <h2>תרגיל נוכחי:</h2>
+      <div id="currentName" style="text-align:center; font-size:20px; margin-bottom:5px;"></div>
+      <div id="currentNote" style="text-align:center; font-size:16px; color:#555; margin-bottom:10px;"></div>
+      <div class="timer" id="currentTime">00:00</div>
+    </div>
+  </div>
+
+  <script>
+    // משתנים גלובליים לניהול תרגילים וטיימר
+    let exercises = [];
+    let currentIndex = 0;
+    let timerInterval = null;
+    let remainingSeconds = 0;
+    let totalTimeRemaining = 0;
+
+    // שמירה וטעינה מ־localStorage
+    function saveExercises() {
+      localStorage.setItem("exercises", JSON.stringify(exercises));
+    }
+    function loadExercises() {
+      const data = localStorage.getItem("exercises");
+      if (data) {
+        exercises = JSON.parse(data);
+      } else {
+        exercises = [];
+      }
+    }
+
+    // מחשב את הזמן הכולל שנותר מהתרגיל הנוכחי והלאה
+    function getRemainingTotalTime() {
+      if (currentIndex >= exercises.length) return 0;
+      let currentExerciseRemaining = (typeof remainingSeconds === "number" && remainingSeconds > 0)
+                                     ? remainingSeconds
+                                     : (exercises[currentIndex].duration * 60);
+      let total = currentExerciseRemaining;
+      for (let i = currentIndex + 1; i < exercises.length; i++) {
+        total += exercises[i].duration * 60;
+      }
+      return total;
+    }
+
+    // עדכון תצוגת השעון הכולל
+    function updateTotalTimerDisplay() {
+      let secondsToDisplay = getRemainingTotalTime();
+      let hrs = Math.floor(secondsToDisplay / 3600);
+      let mins = Math.floor((secondsToDisplay % 3600) / 60);
+      let secs = secondsToDisplay % 60;
+      totalTimerDisplay.textContent =
+        `${hrs.toString().padStart(2, '0')}:${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+    }
+
+    // גישה לאלמנטים
+    const addExerciseBtn = document.getElementById("addExercise");
+    const exerciseNameInput = document.getElementById("exerciseName");
+    const exerciseDurationInput = document.getElementById("exerciseDuration");
+    const exerciseNoteInput = document.getElementById("exerciseNote");
+    const exercisesUl = document.getElementById("exercises");
+
+    const startSessionBtn = document.getElementById("startSession");
+    const stopTimerBtn = document.getElementById("stopTimer");
+    const resetExerciseBtn = document.getElementById("resetExercise");
+    const resetSessionBtn = document.getElementById("resetSession");
+    const deleteAllBtn = document.getElementById("deleteAll");
+
+    const currentNameDiv = document.getElementById("currentName");
+    const currentNoteDiv = document.getElementById("currentNote");
+    const currentTimeDiv = document.getElementById("currentTime");
+    const totalTimerDisplay = document.getElementById("totalTimerDisplay");
+
+    // רינדור רשימת התרגילים (ללא אפשרות עריכה ומספור)
+    function renderExercises() {
+      exercisesUl.innerHTML = "";
+      exercises.forEach((ex, index) => {
+        const li = document.createElement("li");
+        li.className = "exercise" + (index === currentIndex ? " active" : "");
+
+        // לחצני תזוזה
+        const moveContainer = document.createElement("div");
+        moveContainer.className = "moveContainer";
+        if (index > 0) {
+          const upBtn = document.createElement("button");
+          upBtn.className = "upBtn";
+          upBtn.textContent = "Up";
+          upBtn.onclick = function(e) {
+            e.stopPropagation();
+            moveTaskUp(index);
+          };
+          moveContainer.appendChild(upBtn);
+        }
+        if (index < exercises.length - 1) {
+          const downBtn = document.createElement("button");
+          downBtn.className = "downBtn";
+          downBtn.textContent = "Down";
+          downBtn.onclick = function(e) {
+            e.stopPropagation();
+            moveTaskDown(index);
+          };
+          moveContainer.appendChild(downBtn);
+        }
+        li.appendChild(moveContainer);
+
+        // לחיצה על פריט התרגיל מעדכנת את התרגיל הנוכחי
+        li.addEventListener("click", function(e) {
+          if (
+            e.target.tagName.toLowerCase() !== "button" &&
+            !e.target.closest(".upBtn") &&
+            !e.target.closest(".downBtn") &&
+            !e.target.closest(".completeBtn")
+          ) {
+            currentIndex = index;
+            remainingSeconds = exercises[index].duration * 60;
+            totalTimeRemaining = getRemainingTotalTime();
+            updateDisplay();
+            if (timerInterval) {
+              stopTimer();
+              startTimer();
+            }
+          }
+        });
+
+        // תצוגת מידע על התרגיל
+        const infoDiv = document.createElement("div");
+        infoDiv.className = "exercise-info";
+        let content = `<div><strong>${ex.name}</strong> - ${ex.duration} דקות</div>`;
+        if (ex.note && ex.note.trim() !== "") {
+          content += `<div class="exercise-note">${ex.note}</div>`;
+        }
+        infoDiv.innerHTML = content;
+        li.appendChild(infoDiv);
+
+        // לחצן מחיקה
+        const deleteBtn = document.createElement("button");
+        deleteBtn.className = "deleteBtn";
+        deleteBtn.textContent = "מחק";
+        deleteBtn.onclick = function(e) {
+          e.stopPropagation();
+          deleteExercise(index);
+        };
+        li.appendChild(deleteBtn);
+
+        // לחצן סימון ביצוע – ריבוע עם "V" במרכז כאשר מסומן
+        const completeBtn = document.createElement("button");
+        completeBtn.className = "completeBtn" + (ex.completed ? " completed" : "");
+        completeBtn.textContent = ex.completed ? "V" : "";
+        completeBtn.onclick = function(e) {
+          e.stopPropagation();
+          toggleCompleted(index);
+        };
+        li.appendChild(completeBtn);
+
+        exercisesUl.appendChild(li);
+      });
+    }
+
+    // הפונקציות להזזת תרגיל למעלה/למטה
+    function moveTaskUp(index) {
+      if (index <= 0) return;
+      [exercises[index-1], exercises[index]] = [exercises[index], exercises[index-1]];
+      if (currentIndex === index) {
+        currentIndex = index - 1;
+      } else if (currentIndex === index - 1) {
+        currentIndex = index;
+      }
+      saveExercises();
+      renderExercises();
+      updateDisplay();
+      updateTotalTimerDisplay();
+    }
+    function moveTaskDown(index) {
+      if (index >= exercises.length - 1) return;
+      [exercises[index], exercises[index+1]] = [exercises[index+1], exercises[index]];
+      if (currentIndex === index) {
+        currentIndex = index + 1;
+      } else if (currentIndex === index + 1) {
+        currentIndex = index;
+      }
+      saveExercises();
+      renderExercises();
+      updateDisplay();
+      updateTotalTimerDisplay();
+    }
+
+    // סימון ביצוע תרגיל (toggle)
+    function toggleCompleted(index) {
+      exercises[index].completed = !exercises[index].completed;
+      saveExercises();
+      renderExercises();
+    }
+
+    // מחיקת תרגיל בודד
+    function deleteExercise(index) {
+      if (timerInterval) {
+        alert("לא ניתן למחוק בזמן שהתרגול רץ");
+        return;
+      }
+      if (confirm("האם אתה בטוח שברצונך למחוק את התרגיל?")) {
+        exercises.splice(index, 1);
+        if (exercises.length === 0) {
+          localStorage.removeItem("exercises");
+        } else {
+          saveExercises();
+        }
+        if (index < currentIndex) {
+          currentIndex--;
+        } else if (index === currentIndex && currentIndex === exercises.length) {
+          currentIndex--;
+        }
+        renderExercises();
+        updateTotalTimerDisplay();
+        updateDisplay();
+      }
+    }
+
+    // הוספת תרגיל חדש
+    addExerciseBtn.addEventListener("click", function() {
+      const name = exerciseNameInput.value.trim();
+      const duration = parseInt(exerciseDurationInput.value);
+      const note = exerciseNoteInput.value.trim();
+      if (!name || isNaN(duration) || duration <= 0) {
+        alert("נא להזין שם תרגיל תקין ומספר דקות חיובי");
+        return;
+      }
+      exercises.push({ 
+        name: name, 
+        duration: duration, 
+        note: note, 
+        completed: false 
+      });
+      exerciseNameInput.value = "";
+      exerciseDurationInput.value = "";
+      exerciseNoteInput.value = "";
+      saveExercises();
+      renderExercises();
+      updateTotalTimerDisplay();
+    });
+
+    // עדכון תצוגת התרגיל הנוכחי והשעון המקומי
+    function updateDisplay() {
+      if (currentIndex < exercises.length) {
+        const currentExercise = exercises[currentIndex];
+        currentNameDiv.textContent = currentExercise.name;
+        currentNoteDiv.textContent = currentExercise.note || "";
+        let minutes = Math.floor(remainingSeconds / 60);
+        let seconds = remainingSeconds % 60;
+        currentTimeDiv.textContent = `${minutes.toString().padStart(2,'0')}:${seconds.toString().padStart(2,'0')}`;
+      } else {
+        currentNameDiv.textContent = "סיום תרגול";
+        currentNoteDiv.textContent = "";
+        currentTimeDiv.textContent = "";
+      }
+      renderExercises();
+    }
+
+    // הפעלת הטיימר – מעדכן את remainingSeconds ואת totalTimeRemaining כל שנייה
+    function startTimer() {
+      if (currentIndex >= exercises.length) return;
+      if (timerInterval) clearInterval(timerInterval);
+      timerInterval = setInterval(function() {
+        let totalRemaining = getRemainingTotalTime();
+        if (totalRemaining <= 0) {
+          stopTimer();
+          updateDisplay();
+          updateTotalTimerDisplay();
+          return;
+        }
+        if (remainingSeconds > 0) {
+          remainingSeconds--;
+        } else {
+          nextExercise();
+          return;
+        }
+        totalTimeRemaining = getRemainingTotalTime();
+        updateDisplay();
+        updateTotalTimerDisplay();
+      }, 1000);
+    }
+    function startSession() {
+      if (exercises.length === 0) {
+        alert("יש להוסיף תרגילים לפני תחילת התרגול");
+        return;
+      }
+      currentIndex = 0;
+      remainingSeconds = exercises[currentIndex].duration * 60;
+      totalTimeRemaining = getRemainingTotalTime();
+      updateDisplay();
+      updateTotalTimerDisplay();
+      startTimer();
+    }
+    function stopTimer() {
+      if (timerInterval) {
+        clearInterval(timerInterval);
+        timerInterval = null;
+      }
+    }
+    function resetCurrentExercise() {
+      if (currentIndex < exercises.length) {
+        exercises[currentIndex].completed = false;
+        remainingSeconds = exercises[currentIndex].duration * 60;
+        totalTimeRemaining = getRemainingTotalTime();
+        updateDisplay();
+      }
+    }
+    function resetSession() {
+      stopTimer();
+      currentIndex = 0;
+      exercises.forEach(ex => { ex.completed = false; });
+      if (exercises.length > 0) {
+        remainingSeconds = exercises[0].duration * 60;
+      }
+      totalTimeRemaining = getRemainingTotalTime();
+      updateDisplay();
+      updateTotalTimerDisplay();
+    }
+    // מעבר לתרגיל הבא
+    function nextExercise() {
+      stopTimer();
+      if (currentIndex < exercises.length) {
+        exercises[currentIndex].completed = true;
+        saveExercises();
+      }
+      if (currentIndex < exercises.length - 1) {
+        currentIndex++;
+        remainingSeconds = exercises[currentIndex].duration * 60;
+        totalTimeRemaining = getRemainingTotalTime();
+        updateDisplay();
+        startTimer();
+      } else {
+        currentIndex++;
+        updateDisplay();
+        stopTimer();
+      }
+    }
+
+    // לחצן "מחק הכל" – מוחק את כל התרגילים
+    deleteAllBtn.addEventListener("click", function() {
+      if (confirm("האם אתה בטוח שברצונך למחוק את כל התרגילים?")) {
+        exercises = [];
+        currentIndex = 0;
+        remainingSeconds = 0;
+        totalTimeRemaining = 0;
+        localStorage.removeItem("exercises");
+        renderExercises();
+        updateTotalTimerDisplay();
+        updateDisplay();
+      }
+    });
+
+    // מאזינים לכפתורי ניהול
+    startSessionBtn.addEventListener("click", startSession);
+    stopTimerBtn.addEventListener("click", stopTimer);
+    resetExerciseBtn.addEventListener("click", resetCurrentExercise);
+    resetSessionBtn.addEventListener("click", resetSession);
+
+    // אתחול בזמן טעינת הדף
+    window.onload = function() {
+      loadExercises();
+      if (exercises.length > 0) {
+        currentIndex = 0;
+        remainingSeconds = exercises[0].duration * 60;
+        totalTimeRemaining = getRemainingTotalTime();
+      } else {
+        remainingSeconds = 0;
+        totalTimeRemaining = 0;
+      }
+      renderExercises();
+      updateTotalTimerDisplay();
+      updateDisplay();
+    };
+  </script>
+</body>
+</html>
