@@ -3,699 +3,779 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ניהול זמן תרגול פסנתר</title>
-  <!-- Font Awesome (לצורך אייקונים במידה ויש צורך בעתיד) -->
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" 
-        integrity="sha512-Fo3rlrZj/k7ujTTXRM4X+7Uv1D5Qd4w/fim3IRXJkD0uM9hi0/gapKTxjjigMokp3xS1p4X3aM2rM1F1q4wWg==" 
-        crossorigin="anonymous" referrerpolicy="no-referrer" />
+  <title>ניהול זמן תרגול</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
   <style>
-    /* עיצוב קומפקטי ונקי */
+    :root {
+      /* Piano-inspired color scheme */
+      --piano-black: #1a1a1a;
+      --piano-white: #ffffff;
+      --piano-ivory: #f8f4e9;
+      --piano-gold: #d4af37;
+      --piano-gray: #4a4a4a;
+      --piano-red: #c41e3a;
+      --piano-green: #4CAF50;
+      /* Font sizes */
+      --text-xs: 0.675rem;
+      --text-sm: 0.75rem;
+      --text-base: 0.875rem;
+      --text-lg: 1rem;
+      --text-xl: 1.125rem;
+      --text-2xl: 1.25rem;
+    }
+    @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Roboto:wght@300;400;700&display=swap');
     body {
       margin: 0;
       padding: 0;
-      font-family: Arial, sans-serif;
-      background: #f5f5f5;
+      font-family: 'Roboto', Arial, sans-serif;
+      background: var(--piano-ivory);
       direction: rtl;
-      font-size: 14px;
+      font-size: var(--text-base);
+      color: var(--piano-black);
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100' viewBox='0 0 100 100'%3E%3Cpath fill='%23d4af37' fill-opacity='0.1' d='M50 0c27.614 0 50 22.386 50 50s-22.386 50-50 50S0 77.614 0 50 22.386 0 50 0zm0 10c22.091 0 40 17.909 40 40s-17.909 40-40 40S10 72.091 10 50s17.909-40 40-40z'/%3E%3C/svg%3E");
+      background-attachment: fixed;
     }
     .container {
-      max-width: 700px;
-      margin: 10px auto;
-      background: #fff;
-      padding: 10px;
-      border-radius: 8px;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+      max-width: 90%;
+      margin: 5px auto;
+      padding: 5px;
     }
-    h1, h2 {
+    /* Headers */
+    h1 {
+      font-family: 'Playfair Display', serif;
       text-align: center;
-      color: #333;
-      margin: 6px 0;
+      color: var(--piano-black);
+      font-size: var(--text-xl);
+      margin: 0.25rem 0;
     }
-    /* תיבות תוכן */
-    .box {
-      background: #fff;
-      padding: 10px;
-      margin: 10px 0;
+    h2 {
+      font-size: var(--text-base);
+      margin: 0.25rem 0;
+      color: var(--piano-black);
+    }
+    /* Card styling */
+    .card {
+      background: var(--piano-white);
       border-radius: 6px;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+      padding: 0.5rem;
+      margin-bottom: 0.5rem;
+      position: relative;
+      overflow: hidden;
     }
-    /* שדות קלט ולחצנים קומפקטיים */
-    input, textarea {
-      width: 100%;
-      padding: 6px;
-      margin: 6px 0;
-      font-size: 13px;
-      border: 1px solid #ccc;
+    /* Selectors */
+    .instrument-selector {
+      display: flex;
+      gap: 0.5rem;
+    }
+    .instrument-select,
+    .session-select {
+      flex: 1;
+      padding: 0.5rem;
+      border: 1px solid rgba(0,0,0,0.1);
       border-radius: 4px;
-      box-sizing: border-box;
+      font-size: var(--text-sm);
+      background: var(--piano-white);
     }
-    button {
-      padding: 6px 10px;
-      margin: 3px;
-      font-size: 13px;
-      border: none;
+    /* Timer display */
+    .timer {
+      font-family: 'Playfair Display', serif;
+      font-size: var(--text-xl);
+      text-align: center;
+      color: var(--piano-black);
+      margin: 0.25rem 0;
+      padding: 0.25rem;
       border-radius: 4px;
-      cursor: pointer;
-      transition: background 0.3s;
+      background: linear-gradient(45deg, var(--piano-ivory), var(--piano-white));
+      box-shadow: inset 0 1px 2px rgba(0,0,0,0.1);
     }
-    button:hover {
-      opacity: 0.9;
+    .timer.active {
+      animation: timerPulse 1s infinite;
+      color: var(--piano-gold);
     }
-    /* לחצנים עיקריים */
-    #addExercise, #startSession {
-      background: #4CAF50;
-      color: #fff;
-    }
-    #stopTimer {
-      background: #f44336;
-      color: #fff;
-    }
-    #resetExercise, #resetSession, #deleteAll {
-      background: #2196F3;
-      color: #fff;
-    }
-    /* רשימת תרגילים */
-    ul {
+    /* Exercise list */
+    .exercise-list {
       list-style: none;
       padding: 0;
+      margin: 0;
     }
-    li.exercise {
-      padding: 8px;
-      border: 1px solid #ddd;
+    .exercise-item {
+      background: var(--piano-white);
+      border: 1px solid rgba(0,0,0,0.1);
       border-radius: 4px;
-      background: #fdfdfd;
-      margin-bottom: 6px;
+      padding: 0.375rem;
+      margin-bottom: 0.25rem;
       display: flex;
       align-items: center;
       justify-content: space-between;
-      transition: background 0.3s, transform 0.3s;
-      cursor: pointer;
+      font-size: var(--text-xs);
+      transition: all 0.2s ease;
+      color: var(--piano-black);
     }
-    li.exercise:hover {
-      background: #f7f7f7;
-      transform: scale(1.005);
+    .exercise-item:hover {
+      border-color: var(--piano-gold);
+      transform: translateY(-1px);
     }
-    li.exercise.active {
-      background: #ffeb3b;
-      border: 1px solid #fbc02d;
-      font-weight: bold;
+    .exercise-item.active {
+      background: linear-gradient(45deg, var(--piano-gold), var(--piano-gold));
+      color: var(--piano-black);
     }
-    .exercise-info {
-      flex-grow: 1;
-      margin-right: 4px;
+    .exercise-item.completed {
+      border-color: var(--piano-green);
+      background: linear-gradient(45deg, rgba(76,175,80,0.1), transparent);
     }
-    .exercise-info div {
-      line-height: 1.2;
+    .exercise-item.completed .btn-success {
+      background: var(--piano-green);
+      color: var(--piano-white);
     }
-    .exercise-note {
-      font-size: 11px;
-      color: #666;
-      margin-top: 2px;
-    }
-    /* לחצני תזוזה – קטנים מאוד */
-    .moveContainer {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      margin-left: 4px;
-    }
-    .upBtn, .downBtn {
-      padding: 1px 2px;
-      font-size: 10px;
-      border: 1px solid #000;
-      border-radius: 2px;
-      background: #eee;
-      cursor: pointer;
-      color: #000;
-      margin: 1px 0;
-    }
-    .upBtn:hover, .downBtn:hover {
-      background: #ddd;
-    }
-    /* כפתור סימון ביצוע – ריבוע קטן עם V במרכז */
-    .completeBtn {
-      width: 20px;
-      height: 20px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 14px;
-      border: 1px solid #000;
-      background: #fff;
-      cursor: pointer;
-      margin-left: 4px;
-    }
-    .completeBtn.completed {
-      background: #4CAF50;
-      color: #fff;
-    }
-    /* לחצן מחיקה */
-    .deleteBtn {
-      flex-shrink: 0;
-      margin-left: 4px;
-      padding: 4px 8px;
-      font-size: 12px;
+    /* Form inputs */
+    .input-group { margin-bottom: 0.375rem; }
+    input, textarea {
+      width: 100%;
+      padding: 0.375rem;
+      border: 1px solid rgba(0,0,0,0.1);
       border-radius: 4px;
+      font-size: var(--text-xs);
+    }
+    /* Buttons */
+    .btn {
+      padding: 0.375rem 0.5rem;
+      border: none;
+      border-radius: 4px;
+      font-size: var(--text-xs);
+      margin: 0.125rem;
       cursor: pointer;
-      border: 1px solid;
-      background: transparent;
-      color: #f44336;
-      border-color: #f44336;
+      transition: all 0.2s ease;
     }
-    .deleteBtn:hover {
-      background: #f44336;
-      color: #fff;
+    .btn-primary { background: var(--piano-black); color: var(--piano-white); }
+    .btn-secondary { background: var(--piano-gray); color: var(--piano-white); }
+    .btn-success { background: var(--piano-green); color: var(--piano-white); }
+    .btn-danger { background: var(--piano-red); color: var(--piano-white); }
+    .btn-sm { padding: 0.25rem 0.375rem; font-size: var(--text-xs); }
+    /* Controls container */
+    .controls {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.125rem;
+      justify-content: center;
     }
-    /* שעונים */
-    .timer {
+    .exercise-controls {
+      display: flex;
+      gap: 0.125rem;
+      align-items: center;
+    }
+    .exercise-info { flex-grow: 1; margin-right: 0.375rem; }
+    .exercise-name { font-weight: 500; font-size: var(--text-xs); }
+    .exercise-note { font-size: var(--text-xs); color: var(--piano-gray); margin-top: 0.125rem; }
+    .current-exercise-name {
+      font-size: var(--text-base);
+      font-weight: 500;
       text-align: center;
-      font-size: 36px;
-      margin-top: 10px;
-      color: #333;
-      animation: pulse 1s infinite;
+      margin-bottom: 0.25rem;
+      color: inherit;
     }
-    @keyframes pulse {
+    .current-exercise-note {
+      font-size: var(--text-xs);
+      color: var(--piano-gray);
+      text-align: center;
+      margin-bottom: 0.25rem;
+    }
+    @keyframes timerPulse {
       0% { transform: scale(1); }
-      50% { transform: scale(1.05); }
+      50% { transform: scale(1.02); }
       100% { transform: scale(1); }
     }
-    /* סטייל ל-pop-up */
-    #popup {
-      display: none;
+    .popup {
       position: fixed;
       top: 0;
       left: 0;
       width: 100%;
       height: 100%;
-      background: rgba(0,0,0,0.5);
-      z-index: 1000;
+      background: rgba(0,0,0,0.8);
+      display: none;
       align-items: center;
       justify-content: center;
+      z-index: 1000;
+      opacity: 0;
+      visibility: hidden;
+      transition: all 0.3s ease;
     }
-    #popupContent {
-      background: #fff;
-      padding: 20px;
-      border-radius: 8px;
-      text-align: center;
+    .popup.active {
+      opacity: 1;
+      visibility: visible;
+      display: flex;
+    }
+    .popup-content {
+      background: var(--piano-white);
+      padding: 0.75rem;
+      border-radius: 6px;
       max-width: 90%;
-    }
-    /* Media Query למכשירים עם גובה נמוך */
-    @media screen and (max-height: 800px) {
-      .container {
-        margin: 5px;
-        padding: 5px;
-      }
-      h1, h2 {
-        font-size: 18px;
-      }
-      .timer {
-        font-size: 28px;
-      }
-      button, input, textarea {
-        font-size: 11px;
-        padding: 4px 6px;
-      }
-      li.exercise {
-        padding: 6px;
-      }
+      width: 280px;
+      text-align: center;
     }
   </style>
 </head>
 <body>
   <div class="container">
-    <h1>ניהול זמן תרגול פסנתר</h1>
-
-    <!-- תצוגת שעון כולל -->
-    <div class="box" id="totalTimerBox">
+    <h1>ניהול זמן תרגול</h1>
+    <!-- Instrument & Practice Selection -->
+    <div class="card instrument-selector">
+      <select id="instrumentSelect" class="instrument-select">
+        <option value="" disabled selected>בחר כלי נגינה</option>
+        <option value="piano">פסנתר</option>
+        <option value="drums">תופים</option>
+        <option value="electric-guitar">גיטרה חשמלית</option>
+        <option value="guitar">גיטרה</option>
+        <option value="bass">בס</option>
+        <option value="violin">כינור</option>
+      </select>
+      <!-- רשימת תרגולים שמורים – גלובלית (ללא תלות בכלי) -->
+      <select id="sessionSelect" class="session-select" style="display: block;">
+        <option value="new">תרגול חדש (לא שמור)</option>
+      </select>
+    </div>
+    <!-- Practice Management Controls -->
+    <div class="card">
+      <div class="controls">
+        <button id="savePractice" class="btn btn-primary">
+          <i class="fas fa-save"></i> שמור תרגול חדש
+        </button>
+        <button id="newPractice" class="btn btn-secondary">
+          <i class="fas fa-plus"></i> צור תרגול חדש
+        </button>
+        <button id="deletePractice" class="btn btn-danger">
+          <i class="fas fa-trash"></i> מחק תרגול
+        </button>
+      </div>
+    </div>
+    <!-- Timer Display -->
+    <div class="card">
       <h2>זמן כולל</h2>
       <div class="timer" id="totalTimerDisplay">00:00:00</div>
     </div>
-
-    <!-- הוספת תרגיל -->
-    <div class="box" id="exerciseSetup">
+    <!-- Exercise Input -->
+    <div class="card">
       <h2>הוסף תרגיל</h2>
-      <input type="text" id="exerciseName" placeholder="שם התרגיל">
-      <input type="number" id="exerciseDuration" placeholder="משך (בדקות)" min="1">
-      <textarea id="exerciseNote" placeholder="הערה (אופציונלי)" rows="2"></textarea>
-      <button id="addExercise"><i class="fas fa-plus"></i> הוסף תרגיל</button>
+      <div class="input-group">
+        <input type="text" id="exerciseName" placeholder="שם התרגיל">
+      </div>
+      <div class="input-group">
+        <input type="number" id="exerciseDuration" placeholder="משך (בדקות)" min="1">
+      </div>
+      <div class="input-group">
+        <textarea id="exerciseNote" placeholder="הערה (אופציונלי)" rows="2"></textarea>
+      </div>
+      <button id="addExercise" class="btn btn-primary">
+        <i class="fas fa-plus"></i> הוסף תרגיל
+      </button>
     </div>
-
-    <!-- רשימת תרגילים -->
-    <div class="box" id="exerciseListBox">
+    <!-- Exercise List -->
+    <div class="card">
       <h2>רשימת תרגילים</h2>
-      <ul id="exercises"></ul>
+      <ul id="exercises" class="exercise-list"></ul>
     </div>
-
-    <!-- כפתורי ניהול תרגול -->
-    <div class="box" id="controls">
-      <button id="startSession"><i class="fas fa-play"></i> התחל תרגול</button>
-      <button id="stopTimer"><i class="fas fa-pause"></i> עצור</button>
-      <button id="resetExercise"><i class="fas fa-undo"></i> איפוס תרגיל</button>
-      <button id="resetSession"><i class="fas fa-redo"></i> איפוס כולל</button>
-      <button id="deleteAll"><i class="fas fa-trash"></i> מחק הכל</button>
+    <!-- Controls -->
+    <div class="card">
+      <div class="controls">
+        <button id="startSession" class="btn btn-primary">
+          <i class="fas fa-play"></i> התחל תרגול
+        </button>
+        <button id="stopTimer" class="btn btn-secondary">
+          <i class="fas fa-pause"></i> עצור
+        </button>
+        <button id="resetExercise" class="btn btn-secondary">
+          <i class="fas fa-undo"></i> איפוס תרגיל
+        </button>
+        <button id="resetSession" class="btn btn-secondary">
+          <i class="fas fa-redo"></i> איפוס כולל
+        </button>
+        <button id="deleteAll" class="btn btn-danger">
+          <i class="fas fa-trash"></i> מחק הכל
+        </button>
+      </div>
     </div>
-
-    <!-- תצוגת תרגיל נוכחי -->
-    <div class="box" id="currentExerciseBox">
-      <h2>תרגיל נוכחי:</h2>
-      <div id="currentName" style="text-align:center; font-size:20px; margin-bottom:5px;"></div>
-      <div id="currentNote" style="text-align:center; font-size:16px; color:#555; margin-bottom:10px;"></div>
+    <!-- Current Exercise -->
+    <div class="card">
+      <h2>תרגיל נוכחי</h2>
+      <div id="currentName" class="current-exercise-name"></div>
+      <div id="currentNote" class="current-exercise-note"></div>
       <div class="timer" id="currentTime">00:00</div>
     </div>
   </div>
-
-  <!-- אלמנט pop-up -->
-  <div id="popup">
-    <div id="popupContent"></div>
+  <!-- Popup -->
+  <div id="popup" class="popup">
+    <div id="popupContent" class="popup-content"></div>
   </div>
-
   <script>
-    // משתנים גלובליים לניהול תרגילים וטיימר
+    // משתנים עיקריים – המצב המתון (לא נשמר אוטומטית) ישמר רק בלחיצה מפורשת
     let exercises = [];
     let currentIndex = 0;
     let timerInterval = null;
     let remainingSeconds = 0;
     let totalTimeRemaining = 0;
+    let currentInstrumentId = null;
+    let currentSessionId = null;
+    let isSessionSaved = false; // false = מצב לא שמור
 
-    // שמירה וטעינה מ־localStorage
-    function saveExercises() {
-      localStorage.setItem("exercises", JSON.stringify(exercises));
+    const instrumentNames = {
+      piano: "פסנתר",
+      drums: "תופים",
+      "electric-guitar": "גיטרה חשמלית",
+      guitar: "גיטרה",
+      bass: "בס",
+      violin: "כינור"
+    };
+
+    function updateSaveButton() {
+      const btn = document.getElementById('savePractice');
+      btn.innerHTML = isSessionSaved 
+        ? '<i class="fas fa-save"></i> עדכן תרגול זה'
+        : '<i class="fas fa-save"></i> שמור תרגול חדש';
     }
-    function loadExercises() {
-      const data = localStorage.getItem("exercises");
-      if (data) {
-        exercises = JSON.parse(data);
-      } else {
-        exercises = [];
+
+    // שמירה בלחיצה – רק בלחיצה מפורשת מתבצעת שמירה (או עדכון)
+    function saveState(explicit = false) {
+      if (!currentSessionId) return;
+      const key = 'practiceState_' + currentSessionId;
+      if(explicit) { isSessionSaved = true; }
+      const state = {
+        exercises,
+        currentIndex,
+        remainingSeconds,
+        currentInstrumentId,
+        currentSessionId,
+        isSaved: isSessionSaved
+      };
+      localStorage.setItem(key, JSON.stringify(state));
+      updateSaveButton();
+    }
+
+    function loadState(sessionId) {
+      if (!sessionId) return;
+      const key = 'practiceState_' + sessionId;
+      const state = localStorage.getItem(key);
+      if (state) {
+        try {
+          const parsedState = JSON.parse(state);
+          exercises = parsedState.exercises;
+          currentIndex = parsedState.currentIndex;
+          remainingSeconds = parsedState.remainingSeconds;
+          currentInstrumentId = parsedState.currentInstrumentId;
+          isSessionSaved = parsedState.isSaved;
+          updateSaveButton();
+          document.getElementById('instrumentSelect').value = currentInstrumentId;
+          updateDisplay();
+          updateTotalTimerDisplay();
+          renderExercises();
+        } catch(e) { console.error(e); }
       }
     }
 
-    // מחשב את הזמן הכולל שנותר מהתרגיל הנוכחי והלאה
+    function populateSessionSelect() {
+      const sessionSelect = document.getElementById('sessionSelect');
+      sessionSelect.innerHTML = '';
+      const newOption = document.createElement('option');
+      newOption.value = 'new';
+      newOption.textContent = 'תרגול חדש (לא שמור)';
+      sessionSelect.appendChild(newOption);
+      const prefix = 'practiceState_';
+      for (let i = 0; i < localStorage.length; i++){
+        const key = localStorage.key(i);
+        if(key.startsWith(prefix)){
+          try {
+            const state = JSON.parse(localStorage.getItem(key));
+            if(state && state.isSaved){
+              const sessionId = key.substring(prefix.length);
+              const option = document.createElement('option');
+              option.value = sessionId;
+              const date = new Date(parseInt(sessionId));
+              const instrName = instrumentNames[state.currentInstrumentId] || state.currentInstrumentId;
+              option.textContent = instrName + " (" + date.toLocaleString() + ")";
+              sessionSelect.appendChild(option);
+            }
+          } catch(e){}
+        }
+      }
+    }
+
     function getRemainingTotalTime() {
       if (currentIndex >= exercises.length) return 0;
       let currentExerciseRemaining = (typeof remainingSeconds === "number" && remainingSeconds > 0)
-                                     ? remainingSeconds
-                                     : (exercises[currentIndex].duration * 60);
+          ? remainingSeconds
+          : (exercises[currentIndex].duration * 60);
       let total = currentExerciseRemaining;
-      for (let i = currentIndex + 1; i < exercises.length; i++) {
+      for (let i = currentIndex + 1; i < exercises.length; i++){
         total += exercises[i].duration * 60;
       }
       return total;
     }
 
-    // עדכון תצוגת השעון הכולל
     function updateTotalTimerDisplay() {
-      let secondsToDisplay = getRemainingTotalTime();
-      let hrs = Math.floor(secondsToDisplay / 3600);
-      let mins = Math.floor((secondsToDisplay % 3600) / 60);
-      let secs = secondsToDisplay % 60;
-      totalTimerDisplay.textContent =
+      const secondsToDisplay = getRemainingTotalTime();
+      const hrs = Math.floor(secondsToDisplay / 3600);
+      const mins = Math.floor((secondsToDisplay % 3600) / 60);
+      const secs = secondsToDisplay % 60;
+      document.getElementById('totalTimerDisplay').textContent =
         `${hrs.toString().padStart(2, '0')}:${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
     }
 
-    // גישה לאלמנטים
-    const addExerciseBtn = document.getElementById("addExercise");
-    const exerciseNameInput = document.getElementById("exerciseName");
-    const exerciseDurationInput = document.getElementById("exerciseDuration");
-    const exerciseNoteInput = document.getElementById("exerciseNote");
-    const exercisesUl = document.getElementById("exercises");
-
-    const startSessionBtn = document.getElementById("startSession");
-    const stopTimerBtn = document.getElementById("stopTimer");
-    const resetExerciseBtn = document.getElementById("resetExercise");
-    const resetSessionBtn = document.getElementById("resetSession");
-    const deleteAllBtn = document.getElementById("deleteAll");
-
-    const currentNameDiv = document.getElementById("currentName");
-    const currentNoteDiv = document.getElementById("currentNote");
-    const currentTimeDiv = document.getElementById("currentTime");
-    const totalTimerDisplay = document.getElementById("totalTimerDisplay");
-
-    // פונקציות pop-up
-    function showPopup(message, buttonText, callback) {
-      const popup = document.getElementById("popup");
-      const popupContent = document.getElementById("popupContent");
-      popupContent.innerHTML = "";
-      const messageDiv = document.createElement("div");
-      messageDiv.style.marginBottom = "20px";
-      messageDiv.style.fontSize = "18px";
-      messageDiv.textContent = message;
-      popupContent.appendChild(messageDiv);
-      const button = document.createElement("button");
-      button.style.background = "#4CAF50";
-      button.style.color = "#fff";
-      button.style.padding = "10px 20px";
-      button.style.border = "none";
-      button.style.borderRadius = "4px";
-      button.style.cursor = "pointer";
-      button.textContent = buttonText;
-      button.onclick = function() {
-        callback();
-        hidePopup();
-      };
-      popupContent.appendChild(button);
-      popup.style.display = "flex";
-    }
-    function hidePopup() {
-      const popup = document.getElementById("popup");
-      popup.style.display = "none";
-    }
-
-    // רינדור רשימת התרגילים (ללא אפשרות עריכה ומספור)
     function renderExercises() {
-      exercisesUl.innerHTML = "";
+      const exercisesUl = document.getElementById('exercises');
+      exercisesUl.innerHTML = '';
       exercises.forEach((ex, index) => {
-        const li = document.createElement("li");
-        li.className = "exercise" + (index === currentIndex ? " active" : "");
-
-        // לחצני תזוזה
-        const moveContainer = document.createElement("div");
-        moveContainer.className = "moveContainer";
-        if (index > 0) {
-          const upBtn = document.createElement("button");
-          upBtn.className = "upBtn";
-          upBtn.textContent = "Up";
-          upBtn.onclick = function(e) {
-            e.stopPropagation();
-            moveTaskUp(index);
-          };
-          moveContainer.appendChild(upBtn);
+        const li = document.createElement('li');
+        li.className = `exercise-item${index === currentIndex ? ' active' : ''}${ex.completed ? ' completed' : ''}`;
+        const content = document.createElement('div');
+        content.className = 'exercise-info';
+        content.innerHTML = `
+          <div class="exercise-name">${ex.name} - ${ex.duration} דקות</div>
+          ${ex.note ? `<div class="exercise-note">${ex.note}</div>` : ''}
+        `;
+        const controls = document.createElement('div');
+        controls.className = 'exercise-controls';
+        if(index > 0) {
+          const upBtn = document.createElement('button');
+          upBtn.className = 'btn btn-secondary btn-sm';
+          upBtn.innerHTML = '<i class="fas fa-arrow-up"></i>';
+          upBtn.onclick = (e) => { e.stopPropagation(); moveExercise(index, index - 1); };
+          controls.appendChild(upBtn);
         }
-        if (index < exercises.length - 1) {
-          const downBtn = document.createElement("button");
-          downBtn.className = "downBtn";
-          downBtn.textContent = "Down";
-          downBtn.onclick = function(e) {
-            e.stopPropagation();
-            moveTaskDown(index);
-          };
-          moveContainer.appendChild(downBtn);
+        if(index < exercises.length - 1) {
+          const downBtn = document.createElement('button');
+          downBtn.className = 'btn btn-secondary btn-sm';
+          downBtn.innerHTML = '<i class="fas fa-arrow-down"></i>';
+          downBtn.onclick = (e) => { e.stopPropagation(); moveExercise(index, index + 1); };
+          controls.appendChild(downBtn);
         }
-        li.appendChild(moveContainer);
-
-        // לחיצה על התרגיל מעדכנת את התרגיל הנוכחי
-        li.addEventListener("click", function(e) {
-          if (
-            e.target.tagName.toLowerCase() !== "button" &&
-            !e.target.closest(".upBtn") &&
-            !e.target.closest(".downBtn") &&
-            !e.target.closest(".completeBtn")
-          ) {
-            currentIndex = index;
-            remainingSeconds = exercises[index].duration * 60;
-            totalTimeRemaining = getRemainingTotalTime();
-            updateDisplay();
-            if (timerInterval) {
-              stopTimer();
-              startTimer();
-            }
-          }
-        });
-
-        // תצוגת מידע על התרגיל
-        const infoDiv = document.createElement("div");
-        infoDiv.className = "exercise-info";
-        let content = `<div><strong>${ex.name}</strong> - ${ex.duration} דקות</div>`;
-        if (ex.note && ex.note.trim() !== "") {
-          content += `<div class="exercise-note">${ex.note}</div>`;
-        }
-        infoDiv.innerHTML = content;
-        li.appendChild(infoDiv);
-
-        // לחצן מחיקה
-        const deleteBtn = document.createElement("button");
-        deleteBtn.className = "deleteBtn";
-        deleteBtn.textContent = "מחק";
-        deleteBtn.onclick = function(e) {
-          e.stopPropagation();
-          deleteExercise(index);
-        };
-        li.appendChild(deleteBtn);
-
-        // לחצן סימון ביצוע – ריבוע עם "V" במרכז כאשר מסומן
-        const completeBtn = document.createElement("button");
-        completeBtn.className = "completeBtn" + (ex.completed ? " completed" : "");
-        completeBtn.textContent = ex.completed ? "V" : "";
-        completeBtn.onclick = function(e) {
-          e.stopPropagation();
-          toggleCompleted(index);
-        };
-        li.appendChild(completeBtn);
-
+        const completeBtn = document.createElement('button');
+        completeBtn.className = `btn btn-sm ${ex.completed ? 'btn-success' : 'btn-secondary'}`;
+        completeBtn.innerHTML = ex.completed ? '<i class="fas fa-check"></i>' : '';
+        completeBtn.onclick = (e) => { e.stopPropagation(); toggleComplete(index); checkAllExercisesCompleted(); };
+        controls.appendChild(completeBtn);
+        const deleteBtn = document.createElement('button');
+        deleteBtn.className = 'btn btn-danger btn-sm';
+        deleteBtn.innerHTML = '<i class="fas fa-trash"></i>';
+        deleteBtn.onclick = (e) => { e.stopPropagation(); deleteExercise(index); };
+        controls.appendChild(deleteBtn);
+        li.appendChild(content);
+        li.appendChild(controls);
+        li.onclick = () => selectExercise(index);
         exercisesUl.appendChild(li);
       });
     }
 
-    // פונקציות להזזת תרגיל למעלה/למטה
-    function moveTaskUp(index) {
-      if (index <= 0) return;
-      [exercises[index-1], exercises[index]] = [exercises[index], exercises[index-1]];
-      if (currentIndex === index) {
-        currentIndex = index - 1;
-      } else if (currentIndex === index - 1) {
-        currentIndex = index;
-      }
-      saveExercises();
-      renderExercises();
-      updateDisplay();
-      updateTotalTimerDisplay();
-    }
-    function moveTaskDown(index) {
-      if (index >= exercises.length - 1) return;
-      [exercises[index], exercises[index+1]] = [exercises[index+1], exercises[index]];
-      if (currentIndex === index) {
-        currentIndex = index + 1;
-      } else if (currentIndex === index + 1) {
-        currentIndex = index;
-      }
-      saveExercises();
-      renderExercises();
+    function selectExercise(index) {
+      if(index === currentIndex) return;
+      currentIndex = index;
+      remainingSeconds = exercises[index].duration * 60;
       updateDisplay();
       updateTotalTimerDisplay();
     }
 
-    // סימון ביצוע תרגיל (toggle)
-    function toggleCompleted(index) {
-      exercises[index].completed = !exercises[index].completed;
-      saveExercises();
-      renderExercises();
+    function checkAllExercisesCompleted() {
+      if(exercises.length > 0 && exercises.every(ex => ex.completed)){
+        showCompletionPopup();
+      }
     }
 
-    // מחיקת תרגיל בודד
-    function deleteExercise(index) {
-      if (timerInterval) {
-        alert("לא ניתן למחוק בזמן שהתרגול רץ");
+    function showCompletionPopup() {
+      const quotes = [
+        'Claude Debussy: "Works of art make rules; rules do not make works of art."',
+        'Leonard Bernstein: "To achieve great things, two things are needed; a plan, and not quite enough time."',
+        'Bela Bartok: "Competitions are for horses, not artists."',
+        'Franz Liszt: "Mournful and yet grand is the destiny of the artist."',
+        'Gustav Mahler: "I am hitting my head against the walls, but the walls are giving way."',
+        'Igor Stravinsky: "Lesser artists borrow, great artists steal."',
+        'Edward Elgar: "I always said God was against art and I still believe it."',
+        'Johannes Brahms: "Without craftsmanship, inspiration is a mere reed shaken in the wind."',
+        'Joseph Haydn: "There was no one near to confuse me, so I was forced to become original."',
+        'J.S. Bach: "I was obliged to be industrious. Whoever is equally industrious will succeed equally well."',
+        'Erik Satie: "The musician is perhaps the most modest of animals, but he is also the proudest."'
+      ];
+      const randomQuote = quotes[Math.floor(Math.random()*quotes.length)];
+      showPopup('כל הכבוד!', `סיימת את כל התרגילים!<br><br>${randomQuote}`);
+    }
+
+    function addExercise() {
+      if(!currentInstrumentId){
+        showPopup('שגיאה', 'נא לבחור כלי נגינה תחילה');
         return;
       }
-      if (confirm("האם אתה בטוח שברצונך למחוק את התרגיל?")) {
+      const nameInput = document.getElementById('exerciseName');
+      const durationInput = document.getElementById('exerciseDuration');
+      const noteInput = document.getElementById('exerciseNote');
+      const name = nameInput.value.trim();
+      const duration = parseInt(durationInput.value);
+      const note = noteInput.value.trim();
+      if(!name || isNaN(duration) || duration <= 0){
+        showPopup('שגיאה', 'נא להזין שם תרגיל ומשך זמן תקין');
+        return;
+      }
+      exercises.push({ name, duration, note, completed: false });
+      nameInput.value = '';
+      durationInput.value = '';
+      noteInput.value = '';
+      renderExercises();
+      updateTotalTimerDisplay();
+    }
+
+    function moveExercise(fromIndex, toIndex) {
+      const exercise = exercises.splice(fromIndex, 1)[0];
+      exercises.splice(toIndex, 0, exercise);
+      if(currentIndex === fromIndex){ currentIndex = toIndex; }
+      else if(currentIndex === toIndex){ currentIndex = fromIndex; }
+      renderExercises();
+      updateDisplay();
+    }
+
+    function toggleComplete(index) {
+      exercises[index].completed = !exercises[index].completed;
+      renderExercises();
+      checkAllExercisesCompleted();
+    }
+
+    function deleteExercise(index) {
+      if(confirm('האם אתה בטוח שברצונך למחוק את התרגיל?')){
         exercises.splice(index, 1);
-        if (exercises.length === 0) {
-          localStorage.removeItem("exercises");
-        } else {
-          saveExercises();
-        }
-        if (index < currentIndex) {
-          currentIndex--;
-        } else if (index === currentIndex && currentIndex === exercises.length) {
-          currentIndex--;
-        }
+        if(index < currentIndex) currentIndex--;
+        else if(currentIndex === exercises.length) currentIndex--;
         renderExercises();
         updateTotalTimerDisplay();
         updateDisplay();
       }
     }
 
-    // הוספת תרגיל חדש
-    addExerciseBtn.addEventListener("click", function() {
-      const name = exerciseNameInput.value.trim();
-      const duration = parseInt(exerciseDurationInput.value);
-      const note = exerciseNoteInput.value.trim();
-      if (!name || isNaN(duration) || duration <= 0) {
-        alert("נא להזין שם תרגיל תקין ומספר דקות חיובי");
-        return;
-      }
-      exercises.push({ 
-        name: name, 
-        duration: duration, 
-        note: note, 
-        completed: false 
-      });
-      exerciseNameInput.value = "";
-      exerciseDurationInput.value = "";
-      exerciseNoteInput.value = "";
-      saveExercises();
-      renderExercises();
-      updateTotalTimerDisplay();
-    });
-
-    // עדכון תצוגת התרגיל הנוכחי והשעון
-    function updateDisplay() {
-      if (currentIndex < exercises.length) {
-        const currentExercise = exercises[currentIndex];
-        currentNameDiv.textContent = currentExercise.name;
-        currentNoteDiv.textContent = currentExercise.note || "";
-        let minutes = Math.floor(remainingSeconds / 60);
-        let seconds = remainingSeconds % 60;
-        currentTimeDiv.textContent = `${minutes.toString().padStart(2,'0')}:${seconds.toString().padStart(2,'0')}`;
-      } else {
-        currentNameDiv.textContent = "סיום תרגול";
-        currentNoteDiv.textContent = "";
-        currentTimeDiv.textContent = "";
-      }
-      renderExercises();
+    function startTimer() {
+      if(currentIndex >= exercises.length) return;
+      if(timerInterval) clearInterval(timerInterval);
+      document.getElementById('currentTime').classList.add('active');
+      document.getElementById('stopTimer').innerHTML = '<i class="fas fa-pause"></i> עצור';
+      timerInterval = setInterval(() => {
+        if(remainingSeconds > 0){
+          remainingSeconds--;
+          updateDisplay();
+          updateTotalTimerDisplay();
+          saveState(); // שמירה בכל tick
+        } else {
+          handleExerciseComplete();
+        }
+      }, 1000);
     }
 
-    // פונקציה לטיפול בהפסקת תרגיל – מציגה pop-up וממשיכה רק אחרי לחיצה
-    function handleExerciseCompletion() {
+    function stopTimer() {
+      if(timerInterval) {
+        clearInterval(timerInterval);
+        timerInterval = null;
+        document.getElementById('currentTime').classList.remove('active');
+        document.getElementById('stopTimer').innerHTML = '<i class="fas fa-play"></i> המשך';
+      } else {
+        document.getElementById('stopTimer').innerHTML = '<i class="fas fa-pause"></i> עצור';
+        startTimer();
+      }
+      saveState();
+    }
+
+    function handleExerciseComplete() {
       stopTimer();
-      if (currentIndex < exercises.length - 1) {
-        // לאחר סיום תרגיל, סמן את התרגיל הנוכחי כהושלם ושמור
-        exercises[currentIndex].completed = true;
-        saveExercises();
-        // הצגת הודעה עם לחצן "Continue"
-        showPopup("המשיכו לתרגיל הבא", "Continue", function() {
+      exercises[currentIndex].completed = true;
+      document.getElementById('currentName').style.color = 'var(--piano-black)';
+      document.getElementById('currentNote').style.color = 'var(--piano-gray)';
+      renderExercises();
+      checkAllExercisesCompleted();
+      if(currentIndex < exercises.length - 1){
+        showPopup('סיום תרגיל', 'עבור לתרגיל הבא?', () => {
           currentIndex++;
           remainingSeconds = exercises[currentIndex].duration * 60;
-          totalTimeRemaining = getRemainingTotalTime();
           updateDisplay();
           updateTotalTimerDisplay();
           startTimer();
         });
       } else {
-        // אם זהו התרגיל האחרון – סיום התרגול
-        exercises[currentIndex].completed = true;
-        saveExercises();
-        let quotes = [
-          'Claude Debussy: "Works of art make rules; rules do not make works of art."',
-          'Leonard Bernstein: "To achieve great things, two things are needed; a plan, and not quite enough time."',
-          'Bela Bartok: "Competitions are for horses, not artists."',
-          'Franz Liszt: "Mournful and yet grand is the destiny of the artist."',
-          'Gustav Mahler: "I am hitting my head against the walls, but the walls are giving way."',
-          'Igor Stravinsky: "Lesser artists borrow, great artists steal."',
-          'Edward Elgar: "I always said God was against art and I still believe it."',
-          'Johannes Brahms: "Without craftsmanship, inspiration is a mere reed shaken in the wind."',
-          'Joseph Haydn: "There was no one near to confuse me, so I was forced to become original."',
-          'George Bizet: "As a musician I tell you that if you were to suppress adultery, fanaticism, crime, evil, the supernatural, there would no longer be the means for writing one note."',
-          'J.S. Bach: "I was obliged to be industrious. Whoever is equally industrious will succeed equally well."',
-          'Erik Satie: "The musician is perhaps the most modest of animals, but he is also the proudest."',
-          'Robert Schumann: "To send light into the darkness of men\'s hearts - such is the duty of the artist."',
-          'Dmitri Shostakovich: "A creative artist works on his next composition because he was not satisfied with his previous one."',
-          'Richard Strauss: "I may not be a first-rate composer, but I am a first-class second-rate composer."',
-          'John Cage: "I can\'t understand why people are frightened of new ideas. I\'m frightened of the old ones."',
-          'Karlheinz Stockhausen: "I\'m an adventurer. I like invention, I like discovery."',
-          'Benjamin Britten: "The old idea of a composer suddenly having a terrific idea and sitting up all night to write it is nonsense. Nighttime is for sleeping."',
-          'Giacomo Puccini: "Inspiration is an awakening, a quickening of all man\'s faculties, and it is manifested in all high artistic achievements."',
-          'Malcolm Arnold: "Music is the social act of communication among people, a gesture of friendship, the strongest there is."',
-          'Maurice Ravel: "The only love affair I have ever had was with music."',
-          'Richard Wagner: "Imagination creates reality."',
-          'Ludwig van Beethoven: "Music is a higher revelation than all wisdom and philosophy."',
-          'Robert Schumann: "To send light into the darkness of men\'s hearts - such is the duty of the artist."',
-          'Nina Simone: "Jazz is a white term to define black people. My music is black classical music."',
-          'Author Victor Hugo: "Music expresses that which cannot be said and on which it is impossible to be silent."'
-        ];
-        let randomQuote = quotes[Math.floor(Math.random() * quotes.length)];
-        showPopup("כל הכבוד, סיימתם את התרגול", randomQuote, function() {
-          // בסיום אין פעולה נוספת – פשוט הסתר את ה-popup
-        });
+        showCompletionPopup();
       }
     }
 
-    // הפעלת הטיימר – מעדכן את remainingSeconds ו־totalTimeRemaining כל שנייה
-    function startTimer() {
-      if (currentIndex >= exercises.length) return;
-      if (timerInterval) clearInterval(timerInterval);
-      timerInterval = setInterval(function() {
-        let totalRemaining = getRemainingTotalTime();
-        if (totalRemaining <= 0) {
-          stopTimer();
-          updateDisplay();
-          updateTotalTimerDisplay();
-          return;
-        }
-        if (remainingSeconds > 0) {
-          remainingSeconds--;
-        } else {
-          handleExerciseCompletion();
-          return;
-        }
-        totalTimeRemaining = getRemainingTotalTime();
-        updateDisplay();
-        updateTotalTimerDisplay();
-      }, 1000);
-    }
     function startSession() {
-      if (exercises.length === 0) {
-        alert("יש להוסיף תרגילים לפני תחילת התרגול");
+      if(exercises.length === 0){
+        showPopup('שגיאה', 'נא להוסיף תרגילים לפני תחילת התרגול');
         return;
       }
-      currentIndex = 0;
-      remainingSeconds = exercises[currentIndex].duration * 60;
+      if(!timerInterval && remainingSeconds === 0){
+        currentIndex = 0;
+        remainingSeconds = exercises[currentIndex].duration * 60;
+      }
       totalTimeRemaining = getRemainingTotalTime();
       updateDisplay();
       updateTotalTimerDisplay();
       startTimer();
     }
-    function stopTimer() {
-      if (timerInterval) {
-        clearInterval(timerInterval);
-        timerInterval = null;
-      }
-    }
-    function resetCurrentExercise() {
-      if (currentIndex < exercises.length) {
-        exercises[currentIndex].completed = false;
-        remainingSeconds = exercises[currentIndex].duration * 60;
-        totalTimeRemaining = getRemainingTotalTime();
-        updateDisplay();
-      }
-    }
-    function resetSession() {
-      stopTimer();
-      currentIndex = 0;
-      exercises.forEach(ex => { ex.completed = false; });
-      if (exercises.length > 0) {
-        remainingSeconds = exercises[0].duration * 60;
-      }
-      totalTimeRemaining = getRemainingTotalTime();
-      updateDisplay();
-      updateTotalTimerDisplay();
+
+    // לפני סגירת או רענון הדף – שמירה אוטומטית
+    window.addEventListener('beforeunload', () => { saveState(); });
+
+    function showPopup(title, message, callback) {
+      const popup = document.getElementById('popup');
+      const content = document.getElementById('popupContent');
+      content.innerHTML = `
+        <h3>${title}</h3>
+        <p>${message}</p>
+        <button class="btn btn-primary" onclick="hidePopup(); ${callback ? '('+callback.toString()+')();' : ''}">המשך</button>
+      `;
+      popup.classList.add('active');
     }
 
-    // לחצן "מחק הכל" – מוחק את כל התרגילים
-    deleteAllBtn.addEventListener("click", function() {
-      if (confirm("האם אתה בטוח שברצונך למחוק את כל התרגילים?")) {
+    function hidePopup() {
+      document.getElementById('popup').classList.remove('active');
+    }
+
+    function updateDisplay() {
+      const currentName = document.getElementById('currentName');
+      const currentNote = document.getElementById('currentNote');
+      const currentTime = document.getElementById('currentTime');
+      if(currentIndex < exercises.length){
+        const exercise = exercises[currentIndex];
+        currentName.textContent = exercise.name;
+        currentName.style.color = 'var(--piano-black)';
+        currentNote.textContent = exercise.note || '';
+        currentNote.style.color = 'var(--piano-gray)';
+        const minutes = Math.floor(remainingSeconds / 60);
+        const seconds = remainingSeconds % 60;
+        currentTime.textContent = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+      } else {
+        currentName.textContent = 'סיום תרגול';
+        currentName.style.color = 'var(--piano-black)';
+        currentNote.textContent = '';
+        currentTime.textContent = '00:00';
+      }
+      renderExercises();
+    }
+
+    // אתחול – טיפול בבחירת כלי ובדיקת מצב "lastSession"
+    document.addEventListener('DOMContentLoaded', () => {
+      const instrumentSelect = document.getElementById('instrumentSelect');
+      const sessionSelect = document.getElementById('sessionSelect');
+      instrumentSelect.onchange = function() {
+        currentInstrumentId = this.value;
+        localStorage.setItem('lastInstrument', currentInstrumentId);
+      };
+      sessionSelect.onchange = function() {
+        const sessionValue = this.value;
+        if(sessionValue === 'new'){
+          currentSessionId = Date.now().toString();
+          exercises = [];
+          currentIndex = 0;
+          remainingSeconds = 0;
+          isSessionSaved = false;
+          updateDisplay();
+          updateTotalTimerDisplay();
+          localStorage.setItem('lastSession', currentSessionId);
+          updateSaveButton();
+        } else {
+          currentSessionId = sessionValue;
+          loadState(sessionValue);
+          localStorage.setItem('lastSession', currentSessionId);
+        }
+      };
+      document.getElementById('addExercise').onclick = addExercise;
+      document.getElementById('startSession').onclick = startSession;
+      document.getElementById('stopTimer').onclick = stopTimer;
+      document.getElementById('resetExercise').onclick = () => {
+        if(currentIndex < exercises.length){
+          exercises[currentIndex].completed = false;
+          remainingSeconds = exercises[currentIndex].duration * 60;
+          updateDisplay();
+          updateTotalTimerDisplay();
+        }
+      };
+      document.getElementById('resetSession').onclick = () => {
+        stopTimer();
+        currentIndex = 0;
+        exercises.forEach(ex => ex.completed = false);
+        if(exercises.length > 0){
+          remainingSeconds = exercises[0].duration * 60;
+        }
+        updateDisplay();
+        updateTotalTimerDisplay();
+      };
+      document.getElementById('deleteAll').onclick = () => {
+        if(confirm('האם אתה בטוח שברצונך למחוק את כל התרגילים?')){
+          exercises = [];
+          currentIndex = 0;
+          remainingSeconds = 0;
+          const prefix = 'practiceState_';
+          for(let i = localStorage.length - 1; i >= 0; i--){
+            const key = localStorage.key(i);
+            if(key.startsWith(prefix)){
+              localStorage.removeItem(key);
+            }
+          }
+          currentSessionId = null;
+          updateDisplay();
+          updateTotalTimerDisplay();
+        }
+      };
+      document.getElementById('savePractice').onclick = () => {
+        if(!currentInstrumentId){
+          showPopup('שגיאה', 'נא לבחור כלי נגינה תחילה');
+          return;
+        }
+        // אם המצב כבר שמור – עדכון: נעביר מזהה חדש (כך שהתאריך יתעדכן)
+        if(isSessionSaved){
+          const oldKey = 'practiceState_' + currentSessionId;
+          currentSessionId = Date.now().toString();
+          localStorage.removeItem(oldKey);
+        }
+        isSessionSaved = true;
+        saveState(true);
+        populateSessionSelect();
+        showPopup('שמירה', 'התרגול נשמר בהצלחה');
+      };
+      document.getElementById('newPractice').onclick = () => {
+        currentSessionId = Date.now().toString();
         exercises = [];
         currentIndex = 0;
         remainingSeconds = 0;
-        totalTimeRemaining = 0;
-        localStorage.removeItem("exercises");
-        renderExercises();
-        updateTotalTimerDisplay();
+        isSessionSaved = false;
         updateDisplay();
-      }
-    });
-
-    // מאזינים לכפתורי ניהול
-    startSessionBtn.addEventListener("click", startSession);
-    stopTimerBtn.addEventListener("click", stopTimer);
-    resetExerciseBtn.addEventListener("click", resetCurrentExercise);
-    resetSessionBtn.addEventListener("click", resetSession);
-
-    // אתחול בזמן טעינת הדף
-    window.onload = function() {
-      loadExercises();
-      if (exercises.length > 0) {
-        currentIndex = 0;
-        remainingSeconds = exercises[0].duration * 60;
-        totalTimeRemaining = getRemainingTotalTime();
+        updateTotalTimerDisplay();
+        localStorage.setItem('lastSession', currentSessionId);
+        populateSessionSelect();
+        updateSaveButton();
+      };
+      document.getElementById('deletePractice').onclick = () => {
+        const sessionSelect = document.getElementById('sessionSelect');
+        const selected = sessionSelect.value;
+        if(selected === 'new'){
+          showPopup('שגיאה', 'אין תרגול שמור למחיקה');
+          return;
+        }
+        const key = 'practiceState_' + selected;
+        if(confirm('האם אתה בטוח שברצונך למחוק את התרגול השמור?')){
+          localStorage.removeItem(key);
+          currentSessionId = Date.now().toString();
+          exercises = [];
+          currentIndex = 0;
+          remainingSeconds = 0;
+          isSessionSaved = false;
+          updateDisplay();
+          updateTotalTimerDisplay();
+          localStorage.setItem('lastSession', currentSessionId);
+          populateSessionSelect();
+          updateSaveButton();
+          showPopup('מחיקה', 'התרגול נמחק בהצלחה');
+        }
+      };
+      // אם קיים "lastSession" (גם מצב לא שמור) – נטען אותו אוטומטית גם לאחר רענון הדף
+      const lastSession = localStorage.getItem('lastSession');
+      if(lastSession){
+        currentSessionId = lastSession;
+        loadState(lastSession);
       } else {
-        remainingSeconds = 0;
-        totalTimeRemaining = 0;
+        currentSessionId = Date.now().toString();
+        localStorage.setItem('lastSession', currentSessionId);
       }
-      renderExercises();
-      updateTotalTimerDisplay();
-      updateDisplay();
-    };
+      populateSessionSelect();
+    });
   </script>
 </body>
 </html>
